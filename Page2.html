@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>System Warning</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --yellow: #F57F17;
+    --yellow-light: #FFB300;
+    --bg: #0D0D0D;
+    --surface: #1A1A1A;
+    --mono: 'Roboto Mono', monospace;
+    --sans: 'Roboto', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: var(--sans);
+    color: #eee;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  #status-bar {
+    background: #3E2723;
+    border-bottom: 2px solid var(--yellow);
+    padding: 7px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--yellow-light);
+  }
+
+  .blink { animation: blink 0.8s infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+
+  #main {
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    height: calc(100vh - 36px);
+    overflow: hidden;
+  }
+
+  #icon-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  #icon-box {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    background: var(--yellow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+    animation: pulse-y 1.5s infinite;
+  }
+
+  @keyframes pulse-y {
+    0%,100% { box-shadow: 0 0 16px rgba(255,179,0,0.4); }
+    50% { box-shadow: 0 0 32px rgba(255,179,0,0.8); }
+  }
+
+  #title-block h1 { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.2; }
+  #title-block p { font-size: 11px; color: #777; margin-top: 3px; }
+
+  .card {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 13px 14px;
+    border-left: 3px solid var(--yellow);
+  }
+
+  .card-label {
+    font-size: 10px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+  }
+
+  .card-value {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--yellow-light);
+  }
+
+  #countdown-card {
+    background: #1a1200;
+    border-radius: 10px;
+    padding: 16px;
+    border: 1px solid var(--yellow);
+    text-align: center;
+  }
+
+  #countdown-label { font-size: 11px; color: #888; margin-bottom: 6px; }
+
+  #countdown-num {
+    font-family: var(--mono);
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--yellow-light);
+    line-height: 1;
+    text-shadow: 0 0 20px rgba(255,179,0,0.5);
+  }
+
+  #countdown-sub { font-size: 10px; color: #555; margin-top: 6px; }
+
+  #log-box {
+    background: #0a0a0a;
+    border-radius: 8px;
+    padding: 10px 12px;
+    border: 1px solid #1e1e1e;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    line-height: 1.8;
+    color: #444;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .ll { color: #444; }
+  .ll.a { color: var(--yellow-light); }
+  .ll.d { color: #5d4037; }
+
+  #bottom {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: #2a2a2a;
+    text-align: center;
+    padding-bottom: 6px;
+  }
+
+  /* fase final */
+  #phase-end {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #0a0a0a;
+    z-index: 99;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px;
+    opacity: 0;
+    transition: opacity 0.6s;
+  }
+  #phase-end.show { opacity: 1; }
+  #end-emoji { font-size: 64px; margin-bottom: 18px; }
+  #end-title { font-size: 24px; font-weight: 700; color: #00e676; margin-bottom: 10px; }
+  #end-msg { color: #777; font-size: 13px; line-height: 1.7; }
+  #end-sub { margin-top: 24px; font-size: 11px; color: #333; font-family: var(--mono); }
+
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events:none;
+    z-index:999;
+    opacity:0.5;
+  }
+</style>
+</head>
+<body>
+
+<div id="status-bar">
+  <span>⚠ AVISO DO SISTEMA <span class="blink">●</span></span>
+  <span id="clock">--:--</span>
+</div>
+
+<div id="main">
+  <div id="icon-row">
+    <div id="icon-box">🔐</div>
+    <div id="title-block">
+      <h1>Acesso Bloqueado</h1>
+      <p>Atividade suspeita registada</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Motivo do bloqueio</div>
+    <div class="card-value">Tentativa de fuga detetada pelo sistema</div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Ação registada</div>
+    <div class="card-value" id="action-val">Capturando screenshot do ecrã...</div>
+  </div>
+
+  <div id="countdown-card">
+    <div id="countdown-label">O dispositivo será reportado em</div>
+    <div id="countdown-num">30</div>
+    <div id="countdown-sub">segundos — mantenha-se nesta página</div>
+  </div>
+
+  <div id="log-box">
+    <div class="ll a">> Tentativa de saída registada</div>
+    <div class="ll a">> Capturando estado da memória RAM...</div>
+  </div>
+
+  <div id="bottom">PID: 18432 · Session: 0xF4A2B · Android Security Core</div>
+</div>
+
+<div id="phase-end">
+  <div id="end-emoji">😂</div>
+  <div id="end-title">Era só uma brincadeira!</div>
+  <div id="end-msg">
+    Nenhum ficheiro foi apagado.<br>
+    Nenhum dado foi enviado.<br>
+    O teu telemóvel está 100% seguro! 😄
+  </div>
+  <div id="end-sub">// este ficheiro é completamente inofensivo //</div>
+</div>
+
+<script>
+function rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
+// Clock
+function updateClock(){
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+}
+updateClock();
+setInterval(updateClock, 10000);
+
+// Countdown
+let secs = 30;
+const numEl = document.getElementById('countdown-num');
+const cdInterval = setInterval(()=>{
+  secs--;
+  numEl.textContent = secs;
+  if(secs <= 10) numEl.style.color = '#ff5252';
+  if(secs <= 0){
+    clearInterval(cdInterval);
+    showEnd();
+  }
+}, 1000);
+
+// Log lines
+const logBox = document.getElementById('log-box');
+const extraLogs = [
+  'Enviando relatório ao servidor...',
+  'Backup de sessão: CONCLUÍDO',
+  'Registando endereço MAC do dispositivo...',
+  'Timestamp: ' + new Date().toISOString(),
+  'Captura de ecrã: GUARDADA',
+  'Sincronizando com autoridades...',
+];
+let li = 0;
+setInterval(()=>{
+  if(li >= extraLogs.length) return;
+  const d = document.createElement('div');
+  d.className = 'll a';
+  d.textContent = '> ' + extraLogs[li];
+  logBox.appendChild(d);
+  if(li > 0) logBox.children[li].className = 'll d';
+  logBox.scrollTop = logBox.scrollHeight;
+  li++;
+}, 4000);
+
+// Action label cycle
+const actions = [
+  'Capturando screenshot do ecrã...',
+  'Lendo lista de aplicações instaladas...',
+  'Verificando permissões concedidas...',
+  'Registando tentativa de saída...',
+];
+let ai = 0;
+setInterval(()=>{
+  ai = (ai+1)%actions.length;
+  document.getElementById('action-val').textContent = actions[ai];
+}, 3500);
+
+function showEnd(){
+  const end = document.getElementById('phase-end');
+  end.style.display = 'flex';
+  setTimeout(()=>end.classList.add('show'), 50);
+}
+</script>
+</body>
+</html>
+
