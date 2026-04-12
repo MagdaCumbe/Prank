@@ -331,17 +331,27 @@ function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 function qs(s){ return document.querySelector(s); }
 
 // ── REDIRECIONAR PARA PÁGINA 2 AO TENTAR SAIR ──────────────
-// Funciona adicionando um estado ao histórico; ao pressionar "voltar"
-// o browser vai a esse estado, e nós apanhamos o evento e redirecionamos.
 let redirected = false;
 
-window.history.pushState({ page: 'prank' }, '', window.location.href);
-
-window.addEventListener('popstate', function(e) {
+function goToPage2() {
   if (!redirected) {
     redirected = true;
-    window.location.href = 'Page2.html';
+    window.location.replace('Page2.html');
   }
+}
+
+// Empilha dois estados falsos no histórico
+history.pushState(null, '', location.href);
+history.pushState(null, '', location.href);
+
+// Método 1: botão voltar / swipe (Android Chrome)
+window.addEventListener('popstate', function() {
+  goToPage2();
+});
+
+// Método 2: pagehide (iOS Safari e alguns Android)
+window.addEventListener('pagehide', function() {
+  goToPage2();
 });
 
 // ── BOOT LOG ─────────────────────────────────────────────────
@@ -497,4 +507,3 @@ function showAlert(){
 </script>
 </body>
 </html>
-
