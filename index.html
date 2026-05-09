@@ -475,30 +475,51 @@ function addCard(nome, prod, preco) {
   if (all.length > 40) all[all.length-1].remove();
 }
 
+// ─── Dados para notificação estilo Hotmart ────────────────────────────────
+const METODOS_PGTO = [
+  'Pix Hotmart',
+  'Cartão de Crédito',
+  'Boleto Bancário',
+  'Cartão de Débito',
+];
+const HOTMART_ICON = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="40" fill="#FF4B00"/><text x="96" y="140" font-size="110" text-anchor="middle" font-family="sans-serif">🔥</text></svg>`);
+
+function gerarCodHP() {
+  return 'HP' + Math.floor(1000000000 + Math.random() * 9000000000);
+}
+function calcComissao(preco) {
+  // Comissão entre 30% e 60% do preço, igual afiliado Hotmart
+  const pct = 0.30 + Math.random() * 0.30;
+  return (preco * pct).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+}
+
 // ─── Notificação real via SW ──────────────────────────────────────────────
 function enviarNotif(nome, prod, preco) {
   if (Notification.permission !== 'granted') return;
 
-  // Formata o valor igual Hotmart: "197,00"
-  const valorFmt = preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  const metodo  = METODOS_PGTO[Math.floor(Math.random() * METODOS_PGTO.length)];
+  const codigo  = gerarCodHP();
+  const comissao = calcComissao(preco);
+
+  // Formato EXACTO Hotmart
+  const title = `Venda realizada com ${metodo}`;
+  const body  = `Sua comissão: R$ ${comissao} - ${codigo}`;
 
   if (swReady && navigator.serviceWorker.controller) {
     navigator.serviceWorker.controller.postMessage({
       type: 'SHOW_NOTIFICATION',
-      comprador: nome,
-      produto: prod.n,
-      valor: valorFmt,
-      moeda: 'R$',
+      metodo,
+      codigo,
+      comissao,
     });
   } else {
-    // Fallback direto (funciona com app aberto)
     try {
-      new Notification('Hotmart', {
-        body: `🔥 Venda aprovada!\n${nome} comprou ${prod.n} por R$ ${valorFmt}`,
-        icon: 'https://static.hotmart.com/img/hotmart-icon.png',
+      new Notification(title, {
+        body,
+        icon: HOTMART_ICON,
         tag: 'hm-' + Date.now(),
         renotify: true,
-        vibrate: [300, 100, 300],
+        vibrate: [200, 100, 200],
       });
     } catch(e) {}
   }
