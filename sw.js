@@ -1,43 +1,40 @@
-const CACHE_NAME = 'hotmart-notif-v1';
+const CACHE_NAME = 'hotmart-notif-v2';
 
-self.addEventListener('install', (event) => {
-  self.skipWaiting();
-});
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (e) => e.waitUntil(clients.claim()));
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(clients.claim());
-});
-
-// Recebe mensagem do index.html e mostra a notificação real
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
-    const { title, body, icon, tag, data } = event.data;
+  if (!event.data || event.data.type !== 'SHOW_NOTIFICATION') return;
 
-    event.waitUntil(
-      self.registration.showNotification(title, {
-        body,
-        icon,
-        badge: icon,
-        tag: tag || ('hotmart-' + Date.now()),
-        renotify: true,
-        vibrate: [200, 100, 200, 100, 400],
-        data: data || {},
-        requireInteraction: false,
-      })
-    );
-  }
+  const { titulo, comprador, produto, valor, moeda } = event.data;
+
+  // Formato idêntico ao app Hotmart
+  const title = titulo || 'Hotmart';
+  const body  = `🔥 Venda aprovada!\n${comprador} comprou ${produto} por ${moeda || 'R$'} ${valor}`;
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      // Ícone oficial Hotmart (laranja com chama)
+      icon: 'https://static.hotmart.com/img/hotmart-icon.png',
+      badge: 'https://static.hotmart.com/img/hotmart-icon.png',
+      tag: 'hotmart-venda-' + Date.now(),
+      renotify: true,
+      vibrate: [300, 100, 300],
+      requireInteraction: false,
+      silent: false,
+    })
+  );
 });
 
-// Clique na notificação abre/foca o app
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if ('focus' in client) return client.focus();
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if ('focus' in c) return c.focus();
       }
       return clients.openWindow('./');
     })
   );
 });
-
