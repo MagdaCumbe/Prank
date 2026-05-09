@@ -479,26 +479,26 @@ function addCard(nome, prod, preco) {
 function enviarNotif(nome, prod, preco) {
   if (Notification.permission !== 'granted') return;
 
-  const title = `🔥 Nova venda — ${brl(preco)}`;
-  const body  = `${nome} comprou "${prod.n}"`;
-  // ícone inline SVG seguro para SW
-  const icon  = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAABk0lEQVR4nO2Xv0oDQRDGf0ERFBFREbEQG8EiWHkBX8DKB/ANfAIfwMpCELwDCxELC8FGsLEQtBC0EIuAjYWgoCIiIiIiImLhH9jZ2d3Zu0suFx8YWNjd2W++2Zm9OxARERERERERERERERERERERERERkSqjgAngEHgH3oAX4Bw4AzaBNaBZ1YJWgCvgC7gHToDtIcYvA4fAM3AHHADrA4xbBfaAe+AWmAamKpwHwBngAXgENisaXwBnwDHQBuaBLeAUuM9i3wGLwBHwCLwCe0DNkgJgGrgFnDHgGfgBVoFloBe4APqBJeBxyAF6gUegB7gBeoAXoAdog5WQE/gEXoFpoBXYAn6BNlgLKYEvwBkwDqwBhwp6gCfgBdgHNoA1YBc4B65yGrQHmAK2gTvgEbgFToF1YBJoRcmF9nrAHLBMmR3gHigDc8AqsAzcAYvALHAIHAMzwCiwAFwDz8Ae8AhcAl3AD3ALXANPQBpIioi6BIgAAAAAASUVORK5CYII=';
+  // Formata o valor igual Hotmart: "197,00"
+  const valorFmt = preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 
   if (swReady && navigator.serviceWorker.controller) {
     navigator.serviceWorker.controller.postMessage({
       type: 'SHOW_NOTIFICATION',
-      title, body,
-      icon: 'https://magdacumbe.github.io/hotmart-notif/icon.png',
-      tag: 'hm-' + Date.now(),
+      comprador: nome,
+      produto: prod.n,
+      valor: valorFmt,
+      moeda: 'R$',
     });
   } else {
-    // fallback direto (funciona com app aberto)
+    // Fallback direto (funciona com app aberto)
     try {
-      new Notification(title, {
-        body,
+      new Notification('Hotmart', {
+        body: `🔥 Venda aprovada!\n${nome} comprou ${prod.n} por R$ ${valorFmt}`,
+        icon: 'https://static.hotmart.com/img/hotmart-icon.png',
         tag: 'hm-' + Date.now(),
         renotify: true,
-        vibrate: [200,100,200],
+        vibrate: [300, 100, 300],
       });
     } catch(e) {}
   }
